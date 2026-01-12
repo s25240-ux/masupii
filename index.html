@@ -124,29 +124,26 @@
 
   <script>
     /* ===== 音 ===== */
-    let soundEnabled = true;
+let soundEnabled = false;
 
-    const bgm = new Audio("thinkingg.mp3");
-    bgm.loop = true;
-    bgm.volume = 0.3;
+const bgm = new Audio("thinkingg.mp3");
+bgm.loop = true;
+bgm.volume = 0.3;
 
-    const soundOK = new Audio("okok.mp3");
-    const soundNO = new Audio("nonono.mp3");
+const soundOK = new Audio("okok.mp3");
+const soundNO = new Audio("nonono.mp3");
 
-    document.addEventListener("click", () => {
-      if (soundEnabled && bgm.paused) bgm.play();
-    }, { once: true });
+soundToggle.onclick = () => {
+  soundEnabled = !soundEnabled;
 
-    soundToggle.onclick = () => {
-      soundEnabled = !soundEnabled;
-      if (soundEnabled) {
-        bgm.play();
-        soundToggle.textContent = "🔊 音ON";
-      } else {
-        bgm.pause();
-        soundToggle.textContent = "🔇 音OFF";
-      }
-    };
+  if (soundEnabled) {
+    bgm.play();
+    soundToggle.textContent = "🔊 音ON";
+  } else {
+    bgm.pause();
+    soundToggle.textContent = "🔇 音OFF";
+  }
+};
 
     /* ===== 問題データ ===== */
     const questions = [
