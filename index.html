@@ -7,36 +7,64 @@
   <style>
     body {
       font-family: sans-serif;
+      background: #f1f3f5;
+      margin: 0;
+      padding: 0;
       text-align: center;
-      background: #f5f7fa;
-      padding: 20px;
+    }
+
+    /* 音ON/OFFバー */
+    #soundToggle {
+      width: 90%;
+      margin: 20px auto;
+      padding: 14px;
+      font-size: 18px;
+      border-radius: 14px;
+      border: none;
+      background: #333;
+      color: white;
+      cursor: pointer;
+    }
+
+    .card {
+      background: white;
+      width: 90%;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 30px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
 
     h1 {
-      font-size: 32px;
+      font-size: 26px;
+      margin-bottom: 20px;
     }
 
     .parents {
       font-size: 22px;
-      margin: 20px 0;
       font-weight: bold;
+      margin-bottom: 25px;
     }
 
     .choices {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
-      max-width: 500px;
-      margin: 0 auto 20px;
+      margin-bottom: 25px;
     }
 
     .choices button {
-      padding: 18px;
+      padding: 18px 10px;
       font-size: 18px;
-      border-radius: 12px;
+      border-radius: 14px;
       border: none;
       background: #e0e6ef;
+      color: #222;              /* ← 文字化け（見えない）対策 */
+      font-weight: bold;
       cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      transition: 0.1s;
     }
 
     .choices button.active {
@@ -44,53 +72,51 @@
       color: white;
     }
 
-    #checkBtn {
-      font-size: 22px;
-      padding: 14px 30px;
-      border-radius: 14px;
-      border: none;
-      background: #00b894;
-      color: white;
-      cursor: pointer;
-      margin-top: 10px;
+    .choices button:active {
+      transform: scale(0.95);
     }
 
-    #soundToggle {
-      font-size: 18px;
-      padding: 10px 20px;
-      border-radius: 12px;
+    #checkBtn {
+      width: 100%;
+      padding: 18px;
+      font-size: 22px;
+      border-radius: 16px;
       border: none;
-      background: #636e72;
+      background: #333;
       color: white;
       cursor: pointer;
-      margin-bottom: 20px;
     }
 
     #result {
-      font-size: 22px;
       margin-top: 20px;
+      font-size: 22px;
+      font-weight: bold;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>血液型クイズ</h1>
-
   <button id="soundToggle">🔊 音ON</button>
 
-  <div class="parents">
-    親：A型 Rh＋ × B型 Rh－
+  <div class="card">
+    <h1>親の血液型</h1>
+
+    <div class="parents">
+      A型 Rh＋ × B型 Rh－
+    </div>
+
+    <h2>子どもにあり得る血液型（すべて選択）</h2>
+
+    <div class="choices" id="choices"></div>
+
+    <button id="checkBtn">判定</button>
+
+    <div id="result"></div>
   </div>
 
-  <div class="choices" id="choices"></div>
-
-  <button id="checkBtn">チェック</button>
-
-  <div id="result"></div>
-
   <script>
-    /* ================= 音 ================= */
+    /* ========= 音設定 ========= */
     let soundEnabled = true;
 
     const bgm = new Audio("thinking.mp3");
@@ -101,9 +127,7 @@
     const soundNO = new Audio("nono.mp3");
 
     document.addEventListener("click", () => {
-      if (soundEnabled && bgm.paused) {
-        bgm.play();
-      }
+      if (soundEnabled && bgm.paused) bgm.play();
     }, { once: true });
 
     document.getElementById("soundToggle").onclick = () => {
@@ -117,13 +141,17 @@
       }
     };
 
-    /* ================= 血液型 ================= */
+    /* ========= 血液型 ========= */
     const allTypes = [
       "A Rh＋","A Rh－","B Rh＋","B Rh－",
       "AB Rh＋","AB Rh－","O Rh＋","O Rh－"
     ];
 
-    const correctAnswers = ["A Rh＋","A Rh－","B Rh＋","B Rh－","O Rh＋","O Rh－"];
+    const correctAnswers = [
+      "A Rh＋","A Rh－",
+      "B Rh＋","B Rh－",
+      "O Rh＋","O Rh－"
+    ];
 
     const selected = new Set();
     const choicesDiv = document.getElementById("choices");
@@ -138,7 +166,7 @@
       choicesDiv.appendChild(btn);
     });
 
-    /* ================= 判定 ================= */
+    /* ========= 判定 ========= */
     document.getElementById("checkBtn").onclick = () => {
       const result = document.getElementById("result");
 
@@ -169,3 +197,4 @@
 
 </body>
 </html>
+
