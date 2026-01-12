@@ -13,7 +13,6 @@
       text-align: center;
     }
 
-    /* 音ON/OFFバー */
     #soundToggle {
       width: 90%;
       margin: 20px auto;
@@ -60,7 +59,7 @@
       border-radius: 14px;
       border: none;
       background: #e0e6ef;
-      color: #222;              /* ← 文字化け（見えない）対策 */
+      color: #222;
       font-weight: bold;
       cursor: pointer;
       box-shadow: 0 4px 8px rgba(0,0,0,0.15);
@@ -76,15 +75,24 @@
       transform: scale(0.95);
     }
 
-    #checkBtn {
+    #checkBtn, #nextBtn {
       width: 100%;
       padding: 18px;
       font-size: 22px;
       border-radius: 16px;
       border: none;
-      background: #333;
       color: white;
       cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #checkBtn {
+      background: #333;
+    }
+
+    #nextBtn {
+      background: #4f7cff;
+      display: none;
     }
 
     #result {
@@ -102,35 +110,34 @@
   <div class="card">
     <h1>親の血液型</h1>
 
-    <div class="parents">
-      A型 Rh＋ × B型 Rh－
-    </div>
+    <div class="parents" id="parentsText"></div>
 
     <h2>子どもにあり得る血液型（すべて選択）</h2>
 
     <div class="choices" id="choices"></div>
 
     <button id="checkBtn">判定</button>
+    <button id="nextBtn">次へ</button>
 
     <div id="result"></div>
   </div>
 
   <script>
-    /* ========= 音設定 ========= */
+    /* ===== 音 ===== */
     let soundEnabled = true;
 
-    const bgm = new Audio("thinking.mp3");
+    const bgm = new Audio("thinkingg.m3");
     bgm.loop = true;
     bgm.volume = 0.3;
 
     const soundOK = new Audio("okok.mp3");
-    const soundNO = new Audio("nono.mp3");
+    const soundNO = new Audio("nonono.mp3");
 
     document.addEventListener("click", () => {
       if (soundEnabled && bgm.paused) bgm.play();
     }, { once: true });
 
-    document.getElementById("soundToggle").onclick = () => {
+    soundToggle.onclick = () => {
       soundEnabled = !soundEnabled;
       if (soundEnabled) {
         bgm.play();
@@ -141,16 +148,23 @@
       }
     };
 
-    /* ========= 血液型 ========= */
+    /* ===== 問題データ ===== */
+    const questions = [
+      {
+        parents: "A型 Rh＋ × B型 Rh－",
+        correct: ["A Rh＋","A Rh－","B Rh＋","B Rh－","O Rh＋","O Rh－"]
+      },
+      {
+        parents: "O型 Rh－ × O型 Rh－",
+        correct: ["O Rh－"]
+      }
+    ];
+
+    let currentQuestion = 0;
+
     const allTypes = [
       "A Rh＋","A Rh－","B Rh＋","B Rh－",
       "AB Rh＋","AB Rh－","O Rh＋","O Rh－"
-    ];
-
-    const correctAnswers = [
-      "A Rh＋","A Rh－",
-      "B Rh＋","B Rh－",
-      "O Rh＋","O Rh－"
     ];
 
     const selected = new Set();
@@ -166,9 +180,19 @@
       choicesDiv.appendChild(btn);
     });
 
-    /* ========= 判定 ========= */
-    document.getElementById("checkBtn").onclick = () => {
-      const result = document.getElementById("result");
+    function loadQuestion() {
+      selected.clear();
+      document.querySelectorAll(".choices button")
+        .forEach(b => b.classList.remove("active"));
+      result.textContent = "";
+      nextBtn.style.display = "none";
+      parentsText.textContent = questions[currentQuestion].parents;
+    }
+
+    loadQuestion();
+
+    checkBtn.onclick = () => {
+      const correctAnswers = questions[currentQuestion].correct;
 
       const ok =
         correctAnswers.every(t => selected.has(t)) &&
@@ -176,6 +200,7 @@
 
       if (!soundEnabled) {
         result.textContent = ok ? "○ 正解！" : "× 不正解";
+        nextBtn.style.display = "block";
         return;
       }
 
@@ -192,9 +217,15 @@
         result.innerHTML = "× 不正解<br>正解：" + correctAnswers.join("、");
         soundNO.onended = () => bgm.play();
       }
+
+      nextBtn.style.display = "block";
+    };
+
+    nextBtn.onclick = () => {
+      currentQuestion = (currentQuestion + 1) % questions.length;
+      loadQuestion();
     };
   </script>
 
 </body>
 </html>
-
