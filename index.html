@@ -101,6 +101,8 @@
 </head>
 
 <body>
+  <button id="soundToggle">🔊 音ON</button>
+
 
 <div class="box">
   <h2>&#35242;&#12398;&#34880;&#28082;&#22411;</h2>
@@ -125,123 +127,116 @@
 </div>
 
 <script>
-  const soundCorrect = new Audio("okok.mp3");
-  const soundWrong = new Audio("nono.mp3");
+let soundEnabled = true;
 
-  const bloodTypes = [
-    "A+", "A-",
-    "B+", "B-",
-    "AB+", "AB-",
-    "O+", "O-"
-  ];
+/* --- 音声準備 --- */
+const bgm = new Audio("bgm.mp3");
+bgm.loop = true;
+bgm.volume = 0.3;
 
-  const aboRules = {
-    A: ["A", "O"],
-    B: ["B", "O"],
-    AB: ["A", "B"],
-    O: ["O"]
-  };
+const soundCorrect = new Audio("correct.mp3");
+const soundWrong = new Audio("wrong.mp3");
 
-  function rhChildren(rh1, rh2) {
-    if (rh1 === "-" && rh2 === "-") return ["-"];
-    return ["+", "-"];
+/* --- 最初の操作でBGM開始（自動再生対策） --- */
+document.addEventListener("click", () => {
+  if (soundEnabled && bgm.paused) {
+    bgm.play();
+  }
+}, { once: true });
+
+/* --- 音ON/OFFボタン --- */
+document.getElementById("soundToggle").addEventListener("click", () => {
+  soundEnabled = !soundEnabled;
+
+  if (soundEnabled) {
+    bgm.play();
+    document.getElementById("soundToggle").textContent = "🔊 音ON";
+  } else {
+    bgm.pause();
+    document.getElementById("soundToggle").textContent = "🔇 音OFF";
+  }
+});
+
+/* --- 答え判定 --- */
+function checkAnswer(ok, correct) {
+  const result = document.getElementById("result");
+
+  if (!soundEnabled) {
+    result.textContent = ok ? "○ 正解！" : "× 不正解";
+    return;
   }
 
-  let parent1, parent2, correctSet;
+  bgm.pause();
 
-  function randomParent() {
-    return bloodTypes[Math.floor(Math.random() * bloodTypes.length)];
+  if (ok) {
+    soundCorrect.currentTime = 0;
+    soundCorrect.play();
+    result.innerHTML = "○ 正解！";
+    soundCorrect.onended = () => bgm.play();
+  } else {
+    soundWrong.currentTime = 0;
+    soundWrong.play();
+    result.innerHTML = "× 不正解 正解：" + correct.join("、");
+    soundWrong.onended = () => bgm.play();
   }
-
-  function getChildren(p1, p2) {
-    const abo1 = p1.replace(/[+-]/, "");
-    const abo2 = p2.replace(/[+-]/, "");
-    const rh1 = p1.slice(-1);
-    const rh2 = p2.slice(-1);
-
-    let aboChildren = new Set();
-
-    for (let a of aboRules[abo1]) {
-      for (let b of aboRules[abo2]) {
-        if (a === "O") aboChildren.add(b);
-        else if (b === "O") aboChildren.add(a);
-        else if (a === b) aboChildren.add(a);
-        else aboChildren.add("AB");
-      }
-    }
-
-    let result = [];
-    rhChildren(rh1, rh2).forEach(r => {
-      aboChildren.forEach(a => result.push(a + r));
-    });
-
-    return result;
-  }
-
-  function setupChoices() {
-    const div = document.getElementById("choices");
-    div.innerHTML = "";
-
-    bloodTypes.forEach(bt => {
-      const id = "c_" + bt;
-      div.innerHTML +=
-        '<div class="choice">' +
-        '<input type="checkbox" id="' + id + '" value="' + bt + '">' +
-        '<label for="' + id + '">' + bt + '</label>' +
-        '</div>';
-    });
-  }
-
-  function newQuestion() {
-    parent1 = randomParent();
-    parent2 = randomParent();
-    correctSet = getChildren(parent1, parent2);
-
-    document.getElementById("parents").innerHTML =
-      '&#35242;&#9312;&#65306;' + parent1 +
-      '&#12288;&#65295;&#12288;' +
-      '&#35242;&#9313;&#65306;' + parent2;
-
-    document.getElementById("result").textContent = "";
-    document.getElementById("nextBtn").style.display = "none";
-
-    setupChoices();
-  }
-
-  function checkAnswer() {
-    const checked = Array.from(
-      document.querySelectorAll("input[type=checkbox]:checked")
-    ).map(c => c.value).sort();
-
-    const correct = correctSet.slice().sort();
-    const ok =
-      checked.length === correct.length &&
-      checked.every((v, i) => v === correct[i]);
-
-    const result = document.getElementById("result");
-
-    if (ok) {
-  soundCorrect.currentTime = 0;
-  soundCorrect.play();
-  result.innerHTML = '&#9675;&#12288;&#27491;&#35299;&#65281;';
-} else {
-  soundWrong.currentTime = 0;
-  soundWrong.play();
-  result.innerHTML =
-    '&#215;&#12288;&#19981;&#27491;&#35299;&#12288;&#27491;&#35299;&#65306;' +
-    correct.join('&#12289;');
 }
-
-
-    document.getElementById("nextBtn").style.display = "block";
-  }
-
-  function nextQuestion() {
-    newQuestion();
-  }
-
-  newQuestion();
 </script>
+<script>
+let soundEnabled = true;
+
+/* --- 音声準備 --- */
+const bgm = new Audio("bgm.mp3");
+bgm.loop = true;
+bgm.volume = 0.3;
+
+const soundCorrect = new Audio("correct.mp3");
+const soundWrong = new Audio("wrong.mp3");
+
+/* --- 最初の操作でBGM開始（自動再生対策） --- */
+document.addEventListener("click", () => {
+  if (soundEnabled && bgm.paused) {
+    bgm.play();
+  }
+}, { once: true });
+
+/* --- 音ON/OFFボタン --- */
+document.getElementById("soundToggle").addEventListener("click", () => {
+  soundEnabled = !soundEnabled;
+
+  if (soundEnabled) {
+    bgm.play();
+    document.getElementById("soundToggle").textContent = "🔊 音ON";
+  } else {
+    bgm.pause();
+    document.getElementById("soundToggle").textContent = "🔇 音OFF";
+  }
+});
+
+/* --- 答え判定 --- */
+function checkAnswer(ok, correct) {
+  const result = document.getElementById("result");
+
+  if (!soundEnabled) {
+    result.textContent = ok ? "○ 正解！" : "× 不正解";
+    return;
+  }
+
+  bgm.pause();
+
+  if (ok) {
+    soundCorrect.currentTime = 0;
+    soundCorrect.play();
+    result.innerHTML = "○ 正解！";
+    soundCorrect.onended = () => bgm.play();
+  } else {
+    soundWrong.currentTime = 0;
+    soundWrong.play();
+    result.innerHTML = "× 不正解 正解：" + correct.join("、");
+    soundWrong.onended = () => bgm.play();
+  }
+}
+</script>
+
 
 </body>
 </html>
