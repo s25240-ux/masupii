@@ -125,6 +125,10 @@
 </div>
 
 <script>
+  const soundCorrect = new Audio("okok.mp3");
+  const soundWrong = new Audio("nono.mp3");
+  const soundthinking = new Audio("thinking.mp3");
+
   const bloodTypes = [
     "A+", "A-",
     "B+", "B-",
@@ -218,12 +222,17 @@
     const result = document.getElementById("result");
 
     if (ok) {
-      result.innerHTML = '&#9675;&#12288;&#27491;&#35299;&#65281;';
-    } else {
-      result.innerHTML =
-        '&#215;&#12288;&#19981;&#27491;&#35299;&#12288;&#27491;&#35299;&#65306;' +
-        correct.join('&#12289;');
-    }
+  soundCorrect.currentTime = 0;
+  soundCorrect.play();
+  result.innerHTML = '&#9675;&#12288;&#27491;&#35299;&#65281;';
+} else {
+  soundWrong.currentTime = 0;
+  soundWrong.play();
+  result.innerHTML =
+    '&#215;&#12288;&#19981;&#27491;&#35299;&#12288;&#27491;&#35299;&#65306;' +
+    correct.join('&#12289;');
+}
+
 
     document.getElementById("nextBtn").style.display = "block";
   }
