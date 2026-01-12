@@ -1,125 +1,131 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>血液型クイズ</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      background: #f5f5f5;
-      padding: 30px;
-    }
-
-    .card {
-      background: white;
-      padding: 30px;
-      border-radius: 20px;
-      max-width: 400px;
-      margin: auto;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-
-    button {
-      font-size: 20px;
-      padding: 15px 25px;
-      margin: 10px;
-      border-radius: 15px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .answer-btn {
-      width: 120px;
-      height: 80px;
-      font-size: 28px;
-    }
-
-    .correct { background: #4caf50; color: white; }
-    .wrong   { background: #f44336; color: white; }
-
-    #result {
-      font-size: 24px;
-      margin-top: 20px;
-    }
-
-    #parents {
-      font-size: 16px;
-      color: #666;
-      margin-bottom: 10px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>血液型クイズ</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background: #f5f5f5;
+    text-align: center;
+    padding: 20px;
+  }
+  .card {
+    background: #fff;
+    padding: 25px;
+    border-radius: 20px;
+    max-width: 500px;
+    margin: auto;
+    box-shadow: 0 10px 20px rgba(0,0,0,.1);
+  }
+  .parent {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  button.choice {
+    width: 90px;
+    height: 60px;
+    margin: 6px;
+    font-size: 18px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    background: #ddd;
+  }
+  button.choice.selected {
+    background: #90caf9;
+  }
+  #result {
+    font-size: 22px;
+    margin-top: 15px;
+  }
+</style>
 </head>
 <body>
 
 <div class="card">
-  <div id="parents">父：A型　母：B型</div>
-  <h2>子どもの血液型は？</h2>
+  <div class="parent">父：A＋　母：B−</div>
+  <h3>子に当てはまる血液型を<br>すべて選べ</h3>
 
-  <div>
-    <button class="answer-btn" onclick="answer('A')">A</button>
-    <button class="answer-btn" onclick="answer('B')">B</button>
-    <button class="answer-btn" onclick="answer('O')">O</button>
-    <button class="answer-btn" onclick="answer('AB')">AB</button>
-  </div>
+  <div id="choices"></div>
 
-  <div id="result"></div>
-
-  <button onclick="nextQuestion()">次に進む</button>
-
+  <br>
+  <button onclick="check()">判定</button>
+  <button onclick="next()">次に進む</button>
   <br><br>
   <button onclick="toggleSound()">🔊 音 ON / OFF</button>
+
+  <div id="result"></div>
 </div>
 
-<!-- 効果音・BGM -->
 <audio id="okSound" src="okok.mp3"></audio>
 <audio id="noSound" src="nonono.mp3"></audio>
 <audio id="bgm" src="thinkingg.mp3" loop></audio>
 
 <script>
-  let soundOn = true;
-  let answered = false;
-  const correctAnswer = "A";
+const allTypes = [
+  "A+","A-","B+","B-",
+  "AB+","AB-","O+","O-"
+];
 
-  // BGMは最初のクリックで再生（ブラウザ仕様）
-  document.body.addEventListener("click", () => {
-    if (soundOn) {
-      document.getElementById("bgm").play();
-    }
-  }, { once: true });
+// 今回の正解（父A+ × 母B−）
+const correctSet = new Set(allTypes);
 
-  function answer(choice) {
-    if (answered) return;
-    answered = true;
+let selected = new Set();
+let soundOn = true;
 
-    const result = document.getElementById("result");
+// BGM
+document.body.addEventListener("click", () => {
+  if (soundOn) document.getElementById("bgm").play();
+}, { once: true });
 
-    if (choice === correctAnswer) {
-      result.textContent = "⭕ 正解！";
-      if (soundOn) document.getElementById("okSound").play();
-    } else {
-      result.textContent = "❌ 不正解";
-      if (soundOn) document.getElementById("noSound").play();
-    }
+// 選択肢生成
+const area = document.getElementById("choices");
+allTypes.forEach(t => {
+  const btn = document.createElement("button");
+  btn.textContent = t;
+  btn.className = "choice";
+  btn.onclick = () => toggle(btn, t);
+  area.appendChild(btn);
+});
+
+function toggle(btn, type) {
+  if (selected.has(type)) {
+    selected.delete(type);
+    btn.classList.remove("selected");
+  } else {
+    selected.add(type);
+    btn.classList.add("selected");
   }
+}
 
-  function nextQuestion() {
-    answered = false;
-    document.getElementById("result").textContent = "";
-    alert("※ 次の問題は自分で作って増やせるよ！");
+function check() {
+  const result = document.getElementById("result");
+
+  if (
+    selected.size === correctSet.size &&
+    [...selected].every(v => correctSet.has(v))
+  ) {
+    result.textContent = "⭕ 正解！";
+    if (soundOn) document.getElementById("okSound").play();
+  } else {
+    result.textContent = "❌ 不正解";
+    if (soundOn) document.getElementById("noSound").play();
   }
+}
 
-  function toggleSound() {
-    soundOn = !soundOn;
-    const bgm = document.getElementById("bgm");
+function next() {
+  alert("次の問題はここで親の血液型を変えて作れる");
+}
 
-    if (soundOn) {
-      bgm.play();
-    } else {
-      bgm.pause();
-    }
-  }
+function toggleSound() {
+  soundOn = !soundOn;
+  const bgm = document.getElementById("bgm");
+  soundOn ? bgm.play() : bgm.pause();
+}
 </script>
 
 </body>
 </html>
+
