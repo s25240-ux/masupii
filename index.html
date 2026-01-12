@@ -3,226 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <title>血液型クイズ</title>
-
   <style>
     body {
       font-family: sans-serif;
-      background: #f1f3f5;
-      margin: 0;
-      padding: 0;
       text-align: center;
-    }
-
-    #soundToggle {
-      width: 90%;
-      margin: 20px auto;
-      padding: 14px;
-      font-size: 18px;
-      border-radius: 14px;
-      border: none;
-      background: #333;
-      color: white;
-      cursor: pointer;
+      background: #f5f5f5;
+      padding: 30px;
     }
 
     .card {
       background: white;
-      width: 90%;
-      max-width: 600px;
-      margin: 30px auto;
-      padding: 30px 20px;
+      padding: 30px;
       border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      max-width: 400px;
+      margin: auto;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
 
-    h1 {
-      font-size: 26px;
-      margin-bottom: 20px;
-    }
-
-    .parents {
-      font-size: 22px;
-      font-weight: bold;
-      margin-bottom: 25px;
-    }
-
-    .choices {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-bottom: 25px;
-    }
-
-    .choices button {
-      padding: 18px 10px;
-      font-size: 18px;
-      border-radius: 14px;
+    button {
+      font-size: 20px;
+      padding: 15px 25px;
+      margin: 10px;
+      border-radius: 15px;
       border: none;
-      background: #e0e6ef;
-      color: #222;
-      font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-      transition: 0.1s;
     }
 
-    .choices button.active {
-      background: #4f7cff;
-      color: white;
+    .answer-btn {
+      width: 120px;
+      height: 80px;
+      font-size: 28px;
     }
 
-    .choices button:active {
-      transform: scale(0.95);
-    }
-
-    #checkBtn, #nextBtn {
-      width: 100%;
-      padding: 18px;
-      font-size: 22px;
-      border-radius: 16px;
-      border: none;
-      color: white;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    #checkBtn {
-      background: #333;
-    }
-
-    #nextBtn {
-      background: #4f7cff;
-      display: none;
-    }
+    .correct { background: #4caf50; color: white; }
+    .wrong   { background: #f44336; color: white; }
 
     #result {
+      font-size: 24px;
       margin-top: 20px;
-      font-size: 22px;
-      font-weight: bold;
+    }
+
+    #parents {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 10px;
     }
   </style>
 </head>
-
 <body>
 
-  <button id="soundToggle">🔊 音ON</button>
+<div class="card">
+  <div id="parents">父：A型　母：B型</div>
+  <h2>子どもの血液型は？</h2>
 
-  <div class="card">
-    <h1>親の血液型</h1>
-
-    <div class="parents" id="parentsText"></div>
-
-    <h2>子どもにあり得る血液型（すべて選択）</h2>
-
-    <div class="choices" id="choices"></div>
-
-    <button id="checkBtn">判定</button>
-    <button id="nextBtn">次へ</button>
-
-    <div id="result"></div>
+  <div>
+    <button class="answer-btn" onclick="answer('A')">A</button>
+    <button class="answer-btn" onclick="answer('B')">B</button>
+    <button class="answer-btn" onclick="answer('O')">O</button>
+    <button class="answer-btn" onclick="answer('AB')">AB</button>
   </div>
 
-  <script>
-    /* ===== 音 ===== */
-let soundEnabled = false;
+  <div id="result"></div>
 
-const bgm = new Audio("thinkingg.mp3");
-bgm.loop = true;
-bgm.volume = 0.3;
+  <button onclick="nextQuestion()">次に進む</button>
 
-const soundOK = new Audio("okok.mp3");
-const soundNO = new Audio("nonono.mp3");
+  <br><br>
+  <button onclick="toggleSound()">🔊 音 ON / OFF</button>
+</div>
 
-soundToggle.onclick = () => {
-  soundEnabled = !soundEnabled;
+<!-- 効果音・BGM -->
+<audio id="okSound" src="okok.mp3"></audio>
+<audio id="noSound" src="nonono.mp3"></audio>
+<audio id="bgm" src="thinkingg.mp3" loop></audio>
 
-  if (soundEnabled) {
-    bgm.play();
-    soundToggle.textContent = "🔊 音ON";
-  } else {
-    bgm.pause();
-    soundToggle.textContent = "🔇 音OFF";
-  }
-};
+<script>
+  let soundOn = true;
+  let answered = false;
+  const correctAnswer = "A";
 
-    /* ===== 問題データ ===== */
-    const questions = [
-      {
-        parents: "A型 Rh＋ × B型 Rh－",
-        correct: ["A Rh＋","A Rh－","B Rh＋","B Rh－","O Rh＋","O Rh－"]
-      },
-      {
-        parents: "O型 Rh－ × O型 Rh－",
-        correct: ["O Rh－"]
-      }
-    ];
-
-    let currentQuestion = 0;
-
-    const allTypes = [
-      "A Rh＋","A Rh－","B Rh＋","B Rh－",
-      "AB Rh＋","AB Rh－","O Rh＋","O Rh－"
-    ];
-
-    const selected = new Set();
-    const choicesDiv = document.getElementById("choices");
-
-    allTypes.forEach(type => {
-      const btn = document.createElement("button");
-      btn.textContent = type;
-      btn.onclick = () => {
-        btn.classList.toggle("active");
-        selected.has(type) ? selected.delete(type) : selected.add(type);
-      };
-      choicesDiv.appendChild(btn);
-    });
-
-    function loadQuestion() {
-      selected.clear();
-      document.querySelectorAll(".choices button")
-        .forEach(b => b.classList.remove("active"));
-      result.textContent = "";
-      nextBtn.style.display = "none";
-      parentsText.textContent = questions[currentQuestion].parents;
+  // BGMは最初のクリックで再生（ブラウザ仕様）
+  document.body.addEventListener("click", () => {
+    if (soundOn) {
+      document.getElementById("bgm").play();
     }
+  }, { once: true });
 
-    loadQuestion();
+  function answer(choice) {
+    if (answered) return;
+    answered = true;
 
-    checkBtn.onclick = () => {
-      const correctAnswers = questions[currentQuestion].correct;
+    const result = document.getElementById("result");
 
-      const ok =
-        correctAnswers.every(t => selected.has(t)) &&
-        [...selected].every(t => correctAnswers.includes(t));
+    if (choice === correctAnswer) {
+      result.textContent = "⭕ 正解！";
+      if (soundOn) document.getElementById("okSound").play();
+    } else {
+      result.textContent = "❌ 不正解";
+      if (soundOn) document.getElementById("noSound").play();
+    }
+  }
 
-      if (!soundEnabled) {
-        result.textContent = ok ? "○ 正解！" : "× 不正解";
-        nextBtn.style.display = "block";
-        return;
-      }
+  function nextQuestion() {
+    answered = false;
+    document.getElementById("result").textContent = "";
+    alert("※ 次の問題は自分で作って増やせるよ！");
+  }
 
+  function toggleSound() {
+    soundOn = !soundOn;
+    const bgm = document.getElementById("bgm");
+
+    if (soundOn) {
+      bgm.play();
+    } else {
       bgm.pause();
-
-      if (ok) {
-        soundOK.currentTime = 0;
-        soundOK.play();
-        result.textContent = "○ 正解！";
-        soundOK.onended = () => bgm.play();
-      } else {
-        soundNO.currentTime = 0;
-        soundNO.play();
-        result.innerHTML = "× 不正解<br>正解：" + correctAnswers.join("、");
-        soundNO.onended = () => bgm.play();
-      }
-
-      nextBtn.style.display = "block";
-    };
-
-    nextBtn.onclick = () => {
-      currentQuestion = (currentQuestion + 1) % questions.length;
-      loadQuestion();
-    };
-  </script>
+    }
+  }
+</script>
 
 </body>
 </html>
