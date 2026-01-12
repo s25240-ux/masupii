@@ -181,6 +181,62 @@ function checkAnswer(ok, correct) {
   }
 }
 </script>
+<script>
+let soundEnabled = true;
+
+/* --- 音声準備 --- */
+const bgm = new Audio("bgm.mp3");
+bgm.loop = true;
+bgm.volume = 0.3;
+
+const soundCorrect = new Audio("correct.mp3");
+const soundWrong = new Audio("wrong.mp3");
+
+/* --- 最初の操作でBGM開始（自動再生対策） --- */
+document.addEventListener("click", () => {
+  if (soundEnabled && bgm.paused) {
+    bgm.play();
+  }
+}, { once: true });
+
+/* --- 音ON/OFFボタン --- */
+document.getElementById("soundToggle").addEventListener("click", () => {
+  soundEnabled = !soundEnabled;
+
+  if (soundEnabled) {
+    bgm.play();
+    document.getElementById("soundToggle").textContent = "🔊 音ON";
+  } else {
+    bgm.pause();
+    document.getElementById("soundToggle").textContent = "🔇 音OFF";
+  }
+});
+
+/* --- 答え判定 --- */
+function checkAnswer(ok, correct) {
+  const result = document.getElementById("result");
+
+  if (!soundEnabled) {
+    result.textContent = ok ? "○ 正解！" : "× 不正解";
+    return;
+  }
+
+  bgm.pause();
+
+  if (ok) {
+    soundCorrect.currentTime = 0;
+    soundCorrect.play();
+    result.textContent = "○ 正解！";
+    soundCorrect.onended = () => bgm.play();
+  } else {
+    soundWrong.currentTime = 0;
+    soundWrong.play();
+    result.innerHTML = "× 不正解<br>正解：" + correct.join("、");
+    soundWrong.onended = () => bgm.play();
+  }
+}
+</script>
+
 
 
 </body>
