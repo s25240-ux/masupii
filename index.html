@@ -1,243 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-  <meta http-equiv="Content-Type" content="text/html">
-
-  <title>&#34880;&#28082;&#22411;&#21028;&#23450;&#12463;&#12452;&#12474;</title>
+  <meta charset="UTF-8">
+  <title>血液型クイズ</title>
 
   <style>
     body {
       font-family: sans-serif;
-      background-color: #eef1f5;
+      text-align: center;
+      background: #f5f7fa;
       padding: 20px;
     }
 
-    .box {
-      background-color: #ffffff;
-      padding: 24px;
-      border-radius: 14px;
-      max-width: 560px;
-      margin: auto;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    h1 {
+      font-size: 32px;
     }
 
-    /* 親の血液型表示 */
     .parents {
-      text-align: center;
-      background: #f7f9fc;
-      padding: 16px;
-      border-radius: 10px;
       font-size: 22px;
+      margin: 20px 0;
       font-weight: bold;
-      margin-bottom: 20px;
     }
 
-    h2, h3 {
-      margin-top: 0;
-      text-align: center;
-    }
-
-    /* 選択肢をボタン風に */
     .choices {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
-      margin-top: 10px;
+      max-width: 500px;
+      margin: 0 auto 20px;
     }
 
-    .choice {
-      position: relative;
-    }
-
-    .choice input {
-      display: none;
-    }
-
-    .choice label {
-      display: block;
-      padding: 14px 0;
-      text-align: center;
-      font-size: 18px;
-      border-radius: 10px;
-      border: 2px solid #ccc;
-      cursor: pointer;
-      background-color: #ffffff;
-      transition: all 0.2s;
-      user-select: none;
-    }
-
-    /* 押された状態 */
-    .choice input:checked + label {
-      background-color: #4a76ff;
-      color: #ffffff;
-      border-color: #4a76ff;
-      font-weight: bold;
-      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.2);
-    }
-
-    button {
-      width: 100%;
-      margin-top: 20px;
-      padding: 14px;
+    .choices button {
+      padding: 18px;
       font-size: 18px;
       border-radius: 12px;
       border: none;
+      background: #e0e6ef;
       cursor: pointer;
-      background-color: #333;
+    }
+
+    .choices button.active {
+      background: #4f7cff;
       color: white;
     }
 
-    .result {
-      margin-top: 18px;
-      font-size: 18px;
-      font-weight: bold;
-      text-align: center;
+    #checkBtn {
+      font-size: 22px;
+      padding: 14px 30px;
+      border-radius: 14px;
+      border: none;
+      background: #00b894;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
     }
 
-    #nextBtn {
-      background-color: #4a76ff;
+    #soundToggle {
+      font-size: 18px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: none;
+      background: #636e72;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    #result {
+      font-size: 22px;
+      margin-top: 20px;
     }
   </style>
 </head>
 
 <body>
+
+  <h1>血液型クイズ</h1>
+
   <button id="soundToggle">🔊 音ON</button>
 
-
-<div class="box">
-  <h2>&#35242;&#12398;&#34880;&#28082;&#22411;</h2>
-  <div class="parents" id="parents"></div>
-
-  <h3>
-    &#23376;&#12393;&#12418;&#12395;&#12354;&#12426;&#24471;&#12427;&#34880;&#28082;&#22411;
-    &#65288;&#12377;&#12409;&#12390;&#36984;&#25246;&#65289;
-  </h3>
+  <div class="parents">
+    親：A型 Rh＋ × B型 Rh－
+  </div>
 
   <div class="choices" id="choices"></div>
 
-  <button onclick="checkAnswer()">
-    &#21028;&#23450;
-  </button>
+  <button id="checkBtn">チェック</button>
 
-  <div class="result" id="result"></div>
+  <div id="result"></div>
 
-  <button id="nextBtn" style="display:none;" onclick="nextQuestion()">
-    &#27425;&#12408;
-  </button>
-</div>
+  <script>
+    /* ================= 音 ================= */
+    let soundEnabled = true;
 
-<script>
-let soundEnabled = true;
+    const bgm = new Audio("thinking.mp3");
+    bgm.loop = true;
+    bgm.volume = 0.3;
 
-/* --- 音声準備 --- */
-const bgm = new Audio("thinking.mp3");
-bgm.loop = true;
-bgm.volume = 0.3;
+    const soundOK = new Audio("okok.mp3");
+    const soundNO = new Audio("nono.mp3");
 
-const soundCorrect = new Audio("okok.mp3");
-const soundWrong = new Audio("nono.mp3");
+    document.addEventListener("click", () => {
+      if (soundEnabled && bgm.paused) {
+        bgm.play();
+      }
+    }, { once: true });
 
-/* --- 最初の操作でBGM開始（自動再生対策） --- */
-document.addEventListener("click", () => {
-  if (soundEnabled && bgm.paused) {
-    bgm.play();
-  }
-}, { once: true });
+    document.getElementById("soundToggle").onclick = () => {
+      soundEnabled = !soundEnabled;
+      if (soundEnabled) {
+        bgm.play();
+        soundToggle.textContent = "🔊 音ON";
+      } else {
+        bgm.pause();
+        soundToggle.textContent = "🔇 音OFF";
+      }
+    };
 
-/* --- 音ON/OFFボタン --- */
-document.getElementById("soundToggle").addEventListener("click", () => {
-  soundEnabled = !soundEnabled;
+    /* ================= 血液型 ================= */
+    const allTypes = [
+      "A Rh＋","A Rh－","B Rh＋","B Rh－",
+      "AB Rh＋","AB Rh－","O Rh＋","O Rh－"
+    ];
 
-  if (soundEnabled) {
-    bgm.play();
-    document.getElementById("soundToggle").textContent = "🔊 音ON";
-  } else {
-    bgm.pause();
-    document.getElementById("soundToggle").textContent = "🔇 音OFF";
-  }
-});
+    const correctAnswers = ["A Rh＋","A Rh－","B Rh＋","B Rh－","O Rh＋","O Rh－"];
 
-/* --- 答え判定 --- */
-function checkAnswer(ok, correct) {
-  const result = document.getElementById("result");
+    const selected = new Set();
+    const choicesDiv = document.getElementById("choices");
 
-  if (!soundEnabled) {
-    result.textContent = ok ? "○ 正解！" : "× 不正解";
-    return;
-  }
+    allTypes.forEach(type => {
+      const btn = document.createElement("button");
+      btn.textContent = type;
+      btn.onclick = () => {
+        btn.classList.toggle("active");
+        selected.has(type) ? selected.delete(type) : selected.add(type);
+      };
+      choicesDiv.appendChild(btn);
+    });
 
-  bgm.pause();
+    /* ================= 判定 ================= */
+    document.getElementById("checkBtn").onclick = () => {
+      const result = document.getElementById("result");
 
-  if (ok) {
-    soundCorrect.currentTime = 0;
-    soundCorrect.play();
-    result.innerHTML = "○ 正解！";
-    soundCorrect.onended = () => bgm.play();
-  } else {
-    soundWrong.currentTime = 0;
-    soundWrong.play();
-    result.innerHTML = "× 不正解 正解：" + correct.join("、");
-    soundWrong.onended = () => bgm.play();
-  }
-}
-</script>
-<script>
-let soundEnabled = true;
+      const ok =
+        correctAnswers.every(t => selected.has(t)) &&
+        [...selected].every(t => correctAnswers.includes(t));
 
-/* --- 音声準備 --- */
-const bgm = new Audio("bgm.mp3");
-bgm.loop = true;
-bgm.volume = 0.3;
+      if (!soundEnabled) {
+        result.textContent = ok ? "○ 正解！" : "× 不正解";
+        return;
+      }
 
-const soundCorrect = new Audio("correct.mp3");
-const soundWrong = new Audio("wrong.mp3");
+      bgm.pause();
 
-/* --- 最初の操作でBGM開始（自動再生対策） --- */
-document.addEventListener("click", () => {
-  if (soundEnabled && bgm.paused) {
-    bgm.play();
-  }
-}, { once: true });
-
-/* --- 音ON/OFFボタン --- */
-document.getElementById("soundToggle").addEventListener("click", () => {
-  soundEnabled = !soundEnabled;
-
-  if (soundEnabled) {
-    bgm.play();
-    document.getElementById("soundToggle").textContent = "🔊 音ON";
-  } else {
-    bgm.pause();
-    document.getElementById("soundToggle").textContent = "🔇 音OFF";
-  }
-});
-
-/* --- 答え判定 --- */
-function checkAnswer(ok, correct) {
-  const result = document.getElementById("result");
-
-  if (!soundEnabled) {
-    result.textContent = ok ? "○ 正解！" : "× 不正解";
-    return;
-  }
-
-  bgm.pause();
-
-  if (ok) {
-    soundCorrect.currentTime = 0;
-    soundCorrect.play();
-    result.textContent = "○ 正解！";
-    soundCorrect.onended = () => bgm.play();
-  } else {
-    soundWrong.currentTime = 0;
-    soundWrong.play();
-    result.innerHTML = "× 不正解<br>正解：" + correct.join("、");
-    soundWrong.onended = () => bgm.play();
-  }
-}
-</script>
-
-
+      if (ok) {
+        soundOK.currentTime = 0;
+        soundOK.play();
+        result.textContent = "○ 正解！";
+        soundOK.onended = () => bgm.play();
+      } else {
+        soundNO.currentTime = 0;
+        soundNO.play();
+        result.innerHTML = "× 不正解<br>正解：" + correctAnswers.join("、");
+        soundNO.onended = () => bgm.play();
+      }
+    };
+  </script>
 
 </body>
 </html>
